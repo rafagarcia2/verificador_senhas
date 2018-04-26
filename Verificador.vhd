@@ -8,9 +8,9 @@ port (teclas: IN std_logic_vector (7 downto 0);
 end Verificador;
 
 Architecture config OF Verificador IS
-	signal a: std_logic;
-	signal s: std_logic_vector(2 downto 0);
-	signal estado: std_logic_vector(2 downto 0);
+	signal res: std_logic; -- Resultado da Verificacao
+	signal s: std_logic_vector(2 downto 0); -- Estado anteior da maquina
+	signal estado: std_logic_vector(2 downto 0); -- Novo estado da maquina
 	signal K: std_logic_vector(7 downto 0);
 	
 	component Register3 is  --registrador de 3 bits
@@ -26,27 +26,30 @@ Architecture config OF Verificador IS
 				W: out std_logic_vector(7 downto 0));
 	end component;
 
-	component Comparador is --compara se dois vetores de 8 bits sao iguais
+	--compara se dois vetores de 8 bits sao iguais
+	component Comparador is
 		port (teclas1, teclas2: IN std_logic_vector (7 downto 0);
-				c: OUT std_logic);
+				resultado: OUT std_logic);
 	end component;
 	
-	
 	BEGIN
-	--s <= "000";
-	abre <= clock and not s(0) and s(1) and s(2);
-	broqueado <= clock and s(0) and not s(1) and not s(2);
-	modo <= clock and s(0) and s(1);
-	senha_r8 : Register8 port map (teclas, s, cs, clock, reset, K); --registrador que ira salvar a senha
-	
-	-- sinal que eh igual a 1 quando a sua entrada eh igual a senha salva
-	comparar: Comparador port map (teclas, K, a);
-	
-	-- Preenchendo o estado da maquina
-	estado(0) <= clock and not reset and ((not a and not s(0) and s(1) and not s(2)) or (s(0) and not s(1) and not s(2)));
-	estado(1) <= (not s(0) and not s(1) and s(2)) or (not reset and ((a and not s(0) and s(1) and not s(2)) or (not s(0) and s(1) and s(2))));
-	estado(2) <= not reset and (not(s(0) or s(1) or s(2)) and (a and not s(0) and s(1) and not s(2)));
-	-- registrador que ira mudar os estados da maquina
-	estados_r3: Register3 port map (estado, clock, reset, s);
+
+		abre <= clock and not s(0) and s(1) and s(2);
+		broqueado <= clock and s(0) and not s(1) and not s(2);
+		modo <= clock and s(0) and s(1);
+
+		-- K = nova senha
+		senha_r8 : Register8 port map (teclas, s, cs, clock, reset, K); --registrador que ira salvar a senha
+
+		-- sinal que eh igual a 1 quando a sua entrada eh igual a senha salva
+		comparar : Comparador port map (teclas, K, res); -- res = resultado da verificacao
+
+		-- Preenchendo o estado da maquina
+		estado(0) <= clock and not reset and ((not res and not s(0) and s(1) and not s(2)) or (s(0) and not s(1) and not s(2)));
+		estado(1) <= (not s(0) and not s(1) and s(2)) or (not reset and ((res and not s(0) and s(1) and not s(2)) or (not s(0) and s(1) and s(2))));
+		estado(2) <= not reset and (not(s(0) or s(1) or s(2)) and (res and not s(0) and s(1) and not s(2)));
+
+		-- registrador que ira mudar os estados da maquina
+		estados_r3: Register3 port map (estado, clock, reset, s);
 
 END config;
