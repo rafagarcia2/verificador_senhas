@@ -3,10 +3,10 @@ use ieee.std_logic_1164.all;
 
 -- Registrador para teclas
 entity Register8 is 
-	port (Z: in std_logic_vector(7 downto 0);
+	port (teclas: in std_logic_vector(7 downto 0);
 			estado: in std_logic_vector(2 downto 0);
 			cs, clock, reset: in std_logic;
-			W: out std_logic_vector(7 downto 0));
+			senha: out std_logic_vector(7 downto 0));
 end Register8;
 
 -- Metodo para resetar o Registrador
@@ -15,9 +15,9 @@ begin
 	process (clock, reset, cs)
 	begin 
 		if reset = '1' then 
-			W<= "00000000";
+			senha<= "00000000";
 		elsif clock'event and clock = '1' 
-			and cs='0' and estado="010" then W<=Z;
+			and cs='0' and estado="001" then senha<=teclas;
 		end if;
 	end process;
 end resetar;

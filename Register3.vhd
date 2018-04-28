@@ -14,7 +14,7 @@ begin
 	process (clock, reset)
 	begin 
 		if reset = '1' then
-			Q <= "000";
+			Q <= "001";
 		elsif clock'event and clock = '1' then Q<=D;
 		end if;
 	end process;
